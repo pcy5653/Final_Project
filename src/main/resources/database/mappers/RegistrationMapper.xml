@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <mapper namespace="com.cloud.pt.registration.RegistrationDAO">
+ 	<!-- 이용권 등록 -->
+ 	<insert id="setAdd" parameterType="RegistrationVO">
+ 		INSERT INTO REGISTRATION
+ 		(MEMBERNUM, MEMBERSHIPNUM, REGDATE, PTCOUNT, MONTH)
+ 		VALUES 
+ 		<if test="ptCount!=null">(#{memberNum},#{membershipNum},NOW(),#{ptCount},#{month})</if>
+ 		<if test="ptCount==null">(#{memberNum},#{membershipNum},NULL,#{ptCount},#{month})</if>
+ 	</insert>
+ 	
+ 	<!-- 회원정보 업데이트 -->
+ 	<update id="setUpdate" parameterType="Map">
+ 		UPDATE MEMBER
+		<set>
+			<if test="registration.ptCount != null">
+				PTCOUNT=IFNULL(PTCOUNT, 0) + #{registration.ptCount},
+				EMPLOYEENUM=#{employee.employeeNum}
+			</if>
+			<if test="registration.month == 1">
+				EXPIRATIONDATE=DATE_ADD(EXPIRATIONDATE, INTERVAL 1 MONTH)
+			</if>
+			<if test="registration.month == 2">
+				EXPIRATIONDATE=DATE_ADD(EXPIRATIONDATE, INTERVAL 2 MONTH)
+			</if>
+			<if test="registration.month == 3">
+				EXPIRATIONDATE=DATE_ADD(EXPIRATIONDATE, INTERVAL 3 MONTH)
+			</if>
+		</set>
+			WHERE MEMBERNUM=#{registration.memberNum}
+ 	</update>
+ </mapper>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.cloud.pt.approval.ApprovalDAO">
+	<sql id="forPager">
+		<if test="pager.kind=='title'">AND TITLE LIKE CONCAT('%',#{pager.search},'%')</if>
+		<if test="pager.kind=='contents'">AND CONTENTS LIKE CONCAT('%',#{pager.search},'%')</if>
+	</sql>
+	
+	<sql id="state">
+		<if test="pager.division=='proceeding'">AND STATE='진행중'</if>
+		<if test="pager.division=='complete'">AND STATE='완료'</if>
+		<if test="pager.division=='wating'">AND STATE='대기중'</if>
+		<if test="pager.division=='reject'">AND (STATE='중간반려' OR STATE='최종반려')</if>
+		
+	</sql>
+	
+	<sql id="category">
+		<choose>
+			<when test="pager.division=='휴가신청'">
+				AND CATEGORY='휴가신청서'
+			</when>
+			<when test="pager.division=='지출신청'">
+				AND CATEGORY='지출결의서'
+			</when>
+			<when test="pager.division=='휴직신청'">
+				AND CATEGORY='휴직신청서'
+			</when>
+			<otherwise>
+				AND CATEGORY LIKE CONCAT('%','서','%')
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="progress">
+		<choose>
+			<when test="pager.progress=='결재전'">
+				((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NULL) OR (LAST=#{id.employeeNum} AND FINALDATE IS NULL))
+			</when>
+			<when test="pager.progress=='결재완료'">
+				((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NOT NULL) OR (LAST=#{id.employeeNum} AND FINALDATE IS NOT NULL))
+			</when>
+			<otherwise>
+				((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NULL) OR (LAST=#{id.employeeNum} AND FINALDATE IS NULL))
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<!-- 개인count  -->
+	<select id="getMyCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') <include refid="forPager"></include>
+	</select>
+	<select id="getMyWatingCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='대기중'
+		<include refid="forPager"></include>
+	</select>
+	<select id="getMyProceedingCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='진행중'
+		<include refid="forPager"></include>
+	</select>
+	<select id="getMyRejectCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND (STATE='중간반려' OR STATE="최종반려")
+		<include refid="forPager"></include>
+	</select>
+	<select id="getMyCompleteCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='완료'
+		<include refid="forPager"></include>
+	</select>
+	<select id="getTemporaryCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE EMPLOYEENUM= #{id.employeeNum} AND STATE='임시저장'
+		<include refid="forPager"></include>
+	</select>
+	
+	<!-- 결재자count  -->
+	<select id="getAllBeforeCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE STATE NOT IN('중간반려') AND STATE NOT IN('최종반려') AND STATE NOT IN('임시저장') AND ((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NULL) OR
+		 (LAST=#{id.employeeNum} AND FINALDATE IS NULL))
+		<include refid="forPager"></include>
+	</select>
+	<select id="getAllAfterCount" parameterType="Map" resultType="Long">
+		SELECT COUNT(APPROVALNUM) FROM APPROVAL
+		WHERE STATE NOT IN('임시저장') AND ((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NOT NULL) OR
+		 (LAST=#{id.employeeNum} AND FINALDATE IS NOT NULL))
+		<include refid="forPager"></include>
+	</select>
+	
+	
+	<!-- 기안문서함 리스트-->
+	<!-- 전체 리스트 -->
+	<select id="getApprovalAllList" parameterType="Map" resultType="ApprovalVO">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장')
+		<include refid="forPager"/>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<!--대기중 리스트 -->
+	<select id="getApprovalWatingList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='대기중'
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<select id="getApprovalProceedingList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='진행중'
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<select id="getApprovalRejectList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND (STATE='중간반려' OR STATE='최종반려')
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<select id="getApprovalCompleteList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE NOT IN ('임시저장') AND STATE='완료'
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<select id="getTemporaryList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,CATEGORY,TITLE,STATE FROM APPROVAL
+		WHERE EMPLOYEENUM=#{id.employeeNum} AND STATE='임시저장'
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<!-- 결재문서함 리스트 -->
+	<select id="getApproverAllBeforeList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,NAME,CATEGORY,TITLE,STATE,MIDDLE,LAST FROM APPROVAL
+		WHERE STATE NOT IN('중간반려') AND STATE NOT IN('최종반려') AND STATE NOT IN('임시저장') AND ((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NULL) OR
+		 (LAST=#{id.employeeNum} AND FINALDATE IS NULL))
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	<select id="getApproverAllAfterList" resultType="ApprovalVO" parameterType="Map">
+		SELECT APPROVALNUM,REGDATE,NAME,CATEGORY,TITLE,STATE,MIDDLE,LAST FROM APPROVAL
+		WHERE STATE NOT IN('임시저장') AND ((MIDDLE=#{id.employeeNum} AND MIDDLEDATE IS NOT NULL) OR
+		 (LAST=#{id.employeeNum} AND FINALDATE IS NOT NULL))
+		<include refid="forPager"></include>
+		ORDER BY APPROVALNUM DESC LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	
+	<!-- 3.직원목록 -->
+	<select id="getAnnualLine" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM,NAME,POSITION FROM EMPLOYEE ORDER BY EMPLOYEENUM
+	</select>
+	
+	<!-- 결재등록 -->
+	<insert id="setAdd" parameterType="ApprovalVO">
+		INSERT INTO APPROVAL(EMPLOYEENUM,CATEGORY,MIDDLE,LAST,NAME,CONTENTS,TITLE,STATE,LEAVEKIND,USEDATE,STARTDATE,ENDDATE,HALFKIND)
+		VALUES(#{employeeNum},#{category},#{middle},#{last},#{name},#{contents},#{title},'대기중',#{leaveKind},#{useDate},#{startDate},#{endDate},#{halfKind})
+	</insert>
+	<!-- 임시저장 -->
+	<insert id="setTempAdd" parameterType="ApprovalVO">
+		INSERT INTO APPROVAL(EMPLOYEENUM,CATEGORY,MIDDLE,LAST,NAME,CONTENTS,TITLE,STATE,LEAVEKIND,USEDATE,STARTDATE,ENDDATE,HALFKIND)
+		VALUES(#{employeeNum},#{category},#{middle},#{last},#{name},#{contents},#{title},'임시저장',#{leaveKind},#{useDate},#{startDate},#{endDate},#{halfKind})
+	</insert>
+	
+	
+	
+	
+	<!-- 내 문서 디테일 -->
+	<select id="getMyDetail" resultType="ApprovalVO" parameterType="ApprovalVO">
+		SELECT * FROM APPROVAL WHERE APPROVALNUM=#{approvalNum}
+		
+	</select>
+	
+	
+	
+	<!-- 중간결재자정보 -->
+	<select id="getMiddleEmployee" resultType="EmployeeVO" parameterType="ApprovalVO">
+		SELECT POSITION,NAME,SIGNFILE FROM EMPLOYEE WHERE EMPLOYEENUM=#{middle}
+	</select>
+	
+	<!-- 최종결재자정보 -->
+	<select id="getLastEmployee" resultType="EmployeeVO" parameterType="ApprovalVO">
+		SELECT POSITION,NAME,SIGNFILE FROM EMPLOYEE WHERE EMPLOYEENUM=#{last}
+	</select>
+	
+	
+	<delete id="setDelete" parameterType="ApprovalVO">
+		DELETE FROM APPROVAL WHERE APPROVALNUM=#{approvalNum}
+	</delete>
+	
+	<!-- 파일-->
+	<update id="setSignUpload" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE SET SIGNFILE=#{signFile},SIGNORIGINAL=#{signOriginal} WHERE EMPLOYEENUM=#{employeeNum}
+	</update>
+	
+	<select id="getMySignImage" parameterType="EmployeeVO" resultType="EmployeeVO">
+		SELECT SIGNFILE,SIGNORIGINAL FROM EMPLOYEE WHERE EMPLOYEENUM=#{employeeNum}
+	</select>
+	
+	<!-- 중간결재 -->
+	<update id="setMiddleApproval" parameterType="ApprovalVO">
+		UPDATE APPROVAL SET MIDDLEDATE=CURDATE(),STATE=#{state},REASON=#{reason} WHERE APPROVALNUM=#{approvalNum}
+	</update>
+	
+	<!-- 최종결재 -->
+	<update id="setFinalApproval" parameterType="ApprovalVO">
+		UPDATE APPROVAL SET FINALDATE=CURDATE(),STATE=#{state},REASON=#{reason} WHERE APPROVALNUM=#{approvalNum}
+	</update>
+	
+	<select id="getFileCheck" parameterType="EmployeeVO" resultType="EmployeeVO">
+		SELECT SIGNFILE FROM EMPLOYEE WHERE EMPLOYEENUM=#{employeeNum}
+	</select>
+	
+	<!-- 휴가add -->
+	<insert id="setLeave" parameterType="ApprovalVO" >
+		INSERT INTO LEAVE_(EMPLOYEENUM,LEAVEKIND,USEDATE,STARTDATE,ENDDATE) VALUES (#{employeeNum},#{leaveKind},#{useDate},#{startDate},#{endDate})
+	</insert>
+	<update id="setLeaveDate" parameterType="ApprovalVO">
+		UPDATE EMPLOYEE SET LEAVEDATE=LEAVEDATE-#{useDate} WHERE EMPLOYEENUM=#{employeeNum}
+	</update>
+	<!-- 문서상태조회 -->
+	<select id="getState" parameterType="ApprovalVO" resultType="ApprovalVO">
+		SELECT STATE FROM APPROVAL WHERE APPROVALNUM=#{approvalNum}
+	</select>
+	
+</mapper>

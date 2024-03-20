@@ -1,0 +1,18 @@
+aside#layout-menu {
+  width: 23rem !important;
+}
+div.layout-page {
+  padding-left: 23rem !important;
+}
+#layout-navbar {
+  margin: 0rem 2.5rem 0 !important;
+  max-width: calc(100% - 5.2rem) !important;
+}
+.content-wrapper {
+  height: 50rem !important;
+}
+
+.container-p-y {
+  padding: 1rem 0 0 0 !important;
+  height: 100% !important;
+}

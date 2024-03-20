@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.cloud.pt.myPtMember.MemberDAO">
+  	
+  	
+	<select id="getTotal" parameterType="Pager" resultType="Long">
+		SELECT COUNT(MEMBERNUM) FROM MEMBER
+	</select>  
+	
+	<select id="getPtList" parameterType="java.util.Map" resultType="MemVO">
+		SELECT MEMBERNUM, MEMBERNAME , GENDER, BIRTH, PHONE , PTCOUNT,EMPLOYEENUM,JOINDATE
+  			FROM MEMBER 
+  			WHERE EMPLOYEENUM = #{employeeNum}
+  			
+	</select>
+  
+  </mapper>

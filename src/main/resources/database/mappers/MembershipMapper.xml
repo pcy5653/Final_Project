@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.cloud.pt.membership.MembershipDAO">
+	<!-- 이용권 등록 -->
+	<insert id="setAdd" parameterType="MembershipVO">
+		INSERT INTO MEMBERSHIP
+		(NAME,TYPE,MONTH,PTCOUNT,PRICE)
+		VALUES (#{name},#{type},#{month},#{ptCount},#{price})
+	</insert>
+	
+	<!-- 사용자 등록 여부 확인 -->
+	<select id="getReg" resultType="Long" parameterType="MembershipVO">
+		SELECT REGISTRATIONNUM
+		FROM REGISTRATION
+		WHERE MEMBERSHIPNUM=#{membershipNum}
+	</select>
+	
+	<!-- 이용권 삭제 -->
+	<delete id="setDelete" parameterType="MembershipVO">
+		DELETE FROM MEMBERSHIP
+		WHERE MEMBERSHIPNUM =#{membershipNum}
+	</delete>
+	
+	<!-- 전체 이용권 개수 -->
+	<select id="getTotal" resultType="Long">
+		SELECT COUNT(MEMBERSHIPNUM)
+		FROM MEMBERSHIP
+	</select>
+	
+	<!-- 이용권 목록(페이저O)-->
+	<select id="getListForPager" resultType="MembershipVO" parameterType="Pager">
+		SELECT *
+		FROM MEMBERSHIP
+		ORDER BY NAME
+		LIMIT #{startRow}, #{lastRow}
+	</select>
+	
+	<!-- 이용권 목록(페이저X)-->
+	<select id="getList" resultType="MembershipVO">
+		SELECT *
+		FROM MEMBERSHIP
+		ORDER BY NAME
+	</select>
+</mapper>

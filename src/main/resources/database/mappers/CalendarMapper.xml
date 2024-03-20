@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.cloud.pt.ptClass.PtClassDAO">
+  	<select id="getMyList" parameterType="Long" resultType="PtClassVO">
+  		SELECT P.*,M.MEMBERNAME  FROM PT P INNER JOIN MEMBER M 
+		ON P.MEMBERNUM = M.MEMBERNUM 
+		WHERE P.EMPLOYEENUM = #{employeeNum};
+  	</select>
+  	
+  	<insert id="addClass" parameterType="PtClassVO">
+  		INSERT INTO PT (MEMBERNUM,EMPLOYEENUM,STARTTIME,FINISHTIME) VALUES (#{memberNum} , #{employeeNum}, #{startTime},#{finishTime})
+  	</insert>
+  	
+  	<delete id="delClass" parameterType="PtClassVO">
+  		DELETE FROM PT WHERE PTNUM = #{ptNum}
+  	</delete>
+  </mapper>

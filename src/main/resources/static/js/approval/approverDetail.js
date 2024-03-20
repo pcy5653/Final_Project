@@ -1,0 +1,10 @@
+$("#rejectBtn").click(function(){
+    if($("#nowState").val()=='대기중'){
+        $("#state").val("중간반려");
+    }
+    if($("#nowState").val()=='진행중'){
+        $("#state").val("최종반려");
+    }
+   $("#reason").val($("#rejectContent").val());
+   $("#approvalForm").submit();
+})

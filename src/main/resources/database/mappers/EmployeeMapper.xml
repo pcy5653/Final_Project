@@ -4,10 +4,181 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
 <mapper namespace="com.cloud.pt.employee.EmployeeDAO">
+
+	
+	
+	<sql id="searchTotal">
+		<if test="kind=='name'">WHERE NAME LIKE CONCAT('%',#{search},'%')</if>
+		<if test="kind=='position'">WHERE POSITION LIKE CONCAT('%',#{search},'%')</if>
+		<if test="kind=='stateEmpIn'">WHERE STATE='재직' AND NAME LIKE CONCAT('%',#{search},'%')</if>
+		<if test="kind=='stateOut'">WHERE STATE = '퇴직'</if>
+	</sql>
+	
+	<sql id="searchList">
+		<if test="pager.kind=='name'">WHERE NAME LIKE CONCAT('%',#{pager.search},'%')</if>
+		<if test="pager.kind=='position'">WHERE POSITION LIKE CONCAT('%',#{pager.search},'%')</if>
+		<if test="pager.kind=='stateEmpIn'">WHERE STATE='재직' AND NAME LIKE CONCAT('%',#{pager.search},'%')</if>
+		<if test="pager.kind=='stateOut'">WHERE STATE = '퇴직'</if>		
+	</sql>
+	
+	<sql id="positionName">
+		CASE POSITION
+			WHEN 'ROLE_CEO' THEN '대표'
+			WHEN 'ROLE_GENERAL' THEN '총괄 매니저'
+			WHEN 'ROLE_CUSTOMER' THEN '고객관리 매니저'
+			WHEN 'ROLE_RESOURCES' THEN '인사 매니저'
+			WHEN 'ROLE_FACILITY' THEN '시설 매니저'
+			WHEN 'ROLE_TRAINER' THEN '트레이너'
+			WHEN 'ROLE_EX' THEN '가발령'
+		END AS 'POSITION'	
+	</sql>
+	
+	<sql id="positionJoinName">
+		CASE E.POSITION
+			WHEN 'ROLE_CEO' THEN '대표'
+			WHEN 'ROLE_GENERAL' THEN '총괄 매니저'
+			WHEN 'ROLE_CUSTOMER' THEN '고객관리 매니저'
+			WHEN 'ROLE_RESOURCES' THEN '인사 매니저'
+			WHEN 'ROLE_FACILITY' THEN '시설 매니저'
+			WHEN 'ROLE_TRAINER' THEN '트레이너'
+			WHEN 'ROLE_EX' THEN '가발령'
+		END AS 'POSITION'
+	</sql>
+	
+	
+	<select id="getEmpTotal" parameterType="Pager" resultType="Long">
+		SELECT COUNT(EMPLOYEENUM) FROM EMPLOYEE 
+		<include refid="searchTotal"></include>
+	</select>
 	
 	<select id="getEmpLogin" parameterType="EmployeeVO" resultType="EmployeeVO">
 		SELECT * FROM EMPLOYEE 
+		WHERE EMPLOYEENUM = #{employeeNum} 
+	</select>
+	
+	<update id="setFindPwUpdate" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE SET PASSWORD = #{password} WHERE EMPLOYEENUM = #{employeeNum}
+	</update>
+
+	
+	<insert id="setJoin" parameterType="EmployeeVO">
+	<selectKey keyProperty="employeeNum" order="AFTER" resultType="java.lang.String"> 
+		SELECT MAX(EMPLOYEENUM) FROM EMPLOYEE 
+	</selectKey>
+		INSERT INTO EMPLOYEE
+		VALUES (DEFAULT, #{name}, #{password}, #{phone}, #{address}, #{gender}, #{birth}, now(), #{quitDate}, #{state}, #{position}, 12, null, null, #{proFile}, #{proOriginal})
+	</insert>
+	
+	<select id="getTrainerList" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM, NAME
+		FROM EMPLOYEE
+		WHERE POSITION='ROLE_TRAINER'
+	</select>
+	
+	<select id="getEmpList" parameterType="Map" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM,NAME,PHONE,STATE,
+			<include refid="positionName"></include>
+		FROM EMPLOYEE
+			<include refid="searchList"></include>
+		ORDER BY EMPLOYEENUM DESC
+		LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+	
+	<select id="getEmpDetail" parameterType="EmployeeVO" resultType="EmployeeVO" >
+		SELECT EMPLOYEENUM, NAME, PHONE, ADDRESS, BIRTH, JOINDATE, QUITDATE, GENDER, STATE, LEAVEDATE, PROFILE, 
+			<include refid="positionName"></include>
+		FROM EMPLOYEE WHERE EMPLOYEENUM = #{employeeNum}
+	</select>
+	
+	<update id="setEmpUpdate" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE
+		SET 
+		NAME=#{name},PHONE=#{phone},ADDRESS=#{address},GENDER=#{gender},BIRTH=#{birth},QUITDATE=#{quitDate},STATE=#{state},POSITION=#{position}
 		WHERE EMPLOYEENUM = #{employeeNum}
+	</update>
+	
+	<update id="setEmpDelete" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE
+		SET
+		PASSWORD='0',PHONE=NULL,ADDRESS=NULL,GENDER=NULL,BIRTH=NULL,POSITION=NULL,LEAVEDATE=NULL,SIGNFILE=NULL,SIGNORIGINAL=NULL,PROFILE=NULL,PROORIGINAL=NULL
+		WHERE EMPLOYEENUM = #{employeeNum}
+	</update>
+	
+	
+	<!-- Employee 개인 -->
+	<select id="getInfo" parameterType="Map" resultMap="getEmpResult">
+		SELECT  
+			<include refid="positionJoinName"></include>
+			, E.*, CA.*, CE.*
+		FROM EMPLOYEE E
+		LEFT OUTER JOIN CAREER CA
+		ON E.EMPLOYEENUM = CA.EMPLOYEENUM
+		LEFT OUTER JOIN CERTIFICATION CE
+		ON E.EMPLOYEENUM = CE.EMPLOYEENUM
+		WHERE E.EMPLOYEENUM = #{employeeNum}
+	</select>
+	<resultMap type="EmployeeVO" id="getEmpResult">
+		<id column="EMPLOYEENUM" property="employeeNum"/>
+		<result column="NAME" property="name"/>
+		<result column="PASSWORD" property="password"/>
+		<result column="PHONE" property="phone"/>
+		<result column="ADDRESS" property="address"/>
+		<result column="GENDER" property="gender"/>
+		<result column="BIRTH" property="birth"/>
+		<result column="JOINDATE" property="joinDate"/>
+		<result column="QUITDATE" property="quitDate"/>
+		<result column="STATE" property="state"/>
+		<result column="POSITION" property="position"/>
+		<result column="LEAVEDATE" property="leaveDate"/>
+		<result column="SIGNFILE" property="signFile"/>
+		<result column="SIGNORIGINAL" property="signOriginal"/>
+		<result column="PROFILE" property="proFile"/>
+		<result column="PROORIGINAL" property="proOriginal"/>
+		<collection property="careers" javaType="List" ofType="CareerVO">
+			<id column="CAREERNUM" property="careerNum"/>
+			<result column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="CATITLE" property="caTitle"/>
+			<result column="CAPASSDATE" property="caPassDate"/>
+		</collection>
+		<collection property="certifications" javaType="List" ofType="CertificationVO">
+			<id column="CERTIFICATIONNUM" property="certificationNum"/>
+			<result column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="CERTITLE" property="cerTitle"/>
+			<result column="CERPASSDATE" property="cerPassDate"/>
+		</collection>
+	</resultMap>
+	
+	<update id="setInfoUpdate" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE
+		SET 
+		NAME=#{name},PHONE=#{phone},ADDRESS=#{address},GENDER=#{gender},BIRTH=#{birth},QUITDATE=#{quitDate},STATE=#{state},PROFILE=#{proFile},PROORIGINAL=#{proOriginal}
+		WHERE EMPLOYEENUM = #{employeeNum}
+	</update>
+	
+	<insert id="setInfoCareerUpdate" parameterType="CareerVO">
+		INSERT INTO CAREER
+		VALUES (NULL ,#{employeeNum}, #{caTitle}, #{caPassDate})
+	</insert>
+	
+	<select id="getInfoCareer" parameterType="CareerVO" resultType="CareerVO">
+		SELECT CATITLE, CAPASSDATE FROM CAREER WHERE EMPLOYEENUM =#{employeeNum}
+	</select>
+	
+	<insert id="setInfoCertificationUpdate" parameterType="CertificationVO">
+		INSERT INTO CERTIFICATION
+		VALUES(NULL, #{employeeNum}, #{cerTitle}, #{cerPassDate})
+	</insert>
+	
+	<select id="getInfoCertification" parameterType="CertificationVO" resultType="CertificationVO">
+		SELECT CERTITLE, CERPASSDATE FROM CERTIFICATION WHERE EMPLOYEENUM =#{employeeNum}
+	</select>
+	
+	<update id="setPwUpdate" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE SET PASSWORD = #{password} WHERE EMPLOYEENUM = #{employeeNum}
+	</update>
+	
+	<select id="getFindPw" parameterType="EmployeeVO" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM, NAME, PHONE FROM EMPLOYEE WHERE EMPLOYEENUM = #{employeeNum} AND NAME = #{name} AND PHONE = #{phone}
 	</select>
 	
 </mapper>

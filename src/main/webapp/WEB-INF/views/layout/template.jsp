@@ -1,40 +1,90 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <!DOCTYPE html>
-<html>
+<!-- beautify ignore:start -->
+<html
+  lang="en"
+  class="light-style layout-menu-fixed"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="../assets/"
+  data-template="vertical-menu-template-free"
+>
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
-<c:import url="/WEB-INF/views/layout/css.jsp"></c:import>
-<c:import url="/WEB-INF/views/layout/topScript.jsp"></c:import>
-<link rel="stylesheet" href="/css/main.css" />
-
+  <c:import url="/WEB-INF/views/layout/base.jsp"></c:import>
 </head>
+
 <body>
-<div id="wrap">
-      <c:import url="/WEB-INF/views/layout/sidebar.jsp"></c:import>
-      <div id="right">
-        <header>
-          <div class="header_wrap">
-            <div class="header_message">
-              <p>이재혁 님 환영합니다</p>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+		      <!-- sidebar -->
+          <c:import url="/WEB-INF/views/layout/sidebar.jsp"></c:import>
+          <!-- Layout container -->
+          <div class="layout-page">
+            <!-- Navbar -->
+            <c:import url="/WEB-INF/views/layout/header.jsp"></c:import>
+
+            <!-- Content wrapper -->
+            <div class="content-wrapper">
+              <!-- Content 내용 여기로 -->
+              <div class="container-xxl flex-grow-1 container-p-y">
+                
+
+              </div>
+              <!-- / Content --> 
+              
+              
+              <!-- Footer -->
+                <!-- <footer class="content-footer footer bg-footer-theme">
+                  <div class="container-xxl d-flex flex-wrap justify-content-between py-2 flex-md-row flex-column">
+                    <div class="mb-2 mb-md-0">
+                      ©
+                      <script>
+                        document.write(new Date().getFullYear());
+                      </script>
+                      , made with ❤️ by
+                      <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">ThemeSelection</a>
+                    </div>
+                    <div>
+                      <a href="https://themeselection.com/license/" class="footer-link me-4" target="_blank">License</a>
+                      <a href="https://themeselection.com/" target="_blank" class="footer-link me-4">More Themes</a>
+
+                      <a
+                        href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
+                        target="_blank"
+                        class="footer-link me-4"
+                        >Documentation</a
+                      >
+
+                      <a
+                        href="https://github.com/themeselection/sneat-html-admin-template-free/issues"
+                        target="_blank"
+                        class="footer-link me-4"
+                        >Support</a
+                      >
+                    </div>
+                  </div>
+                </footer> -->
+                <!-- / Footer -->       
+
+              <div class="content-backdrop fade"></div>
             </div>
-            <div class="header_navi">
-              <a href="#">조직도</a>
-              <a href="#">로그인</a>
-              <a href="#">로그아웃</a>
-              <a href="#">마이페이지</a>
-            </div>
+            <!-- Content wrapper -->
           </div>
-        </header>
-        <!-- main내용  -->
-        <section id="mainContents"> 
-        	<p>예시입니다 여기서부터 내용 작성해 주세요 maincss는 변경하시면 안됩니당</p>
-        </section>
-        
-      </div>
+        <!-- / Layout page -->
+      <div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
     </div>
-</body>
-<c:import url="/WEB-INF/views/layout/btmScript.jsp"></c:import>
+    <!-- / Layout wrapper -->
+  
+
+    <c:import url="/WEB-INF/views/layout/js.jsp"></c:import>
+  </body>
 </html>

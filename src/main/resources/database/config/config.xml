@@ -6,8 +6,46 @@
 	<typeAliases>
 		<!-- 채연 -->
 		<typeAlias type="com.cloud.pt.employee.EmployeeVO" alias="EmployeeVO"/>
+		<typeAlias type="com.cloud.pt.employee.CareerVO" alias="CareerVO"/>
+		<typeAlias type="com.cloud.pt.employee.CertificationVO" alias="CertificationVO"/>
+		<typeAlias type="com.cloud.pt.ptClass.PtClassVO" alias="PtClassVO"/>
+		<typeAlias type="java.lang.Long" alias="Long"/>
+		<typeAlias type="com.cloud.pt.commons.Pager" alias="Pager"/>
+		<typeAlias type="com.cloud.pt.member.MemVO" alias="MemVO"/>
+		<typeAlias type="com.cloud.pt.registration.RegistrationVO" alias="RegistrationVO"/>
+		<typeAlias type="com.cloud.pt.employee.PasswordVO" alias="PasswordVO"/>
+		<typeAlias type="com.cloud.pt.machine.MachineVO" alias="MachineVO"/>
 		
 		<!-- 유빈 -->
 		<typeAlias type="com.cloud.pt.attendance.AttendanceVO" alias="AttendanceVO"/>
+		<typeAlias type="com.cloud.pt.attendance.AttendanceModifyVO" alias="AttendanceModifyVO"/>
+		<typeAlias type="com.cloud.pt.membership.MembershipVO" alias="MembershipVO"/>
+		<typeAlias type="java.util.Map" alias="Map"/>
+
+		<!-- 재혁 -->
+		<typeAlias type="com.cloud.pt.myPtMember.MemberVO" alias="MemberVO"/>
+		<typeAlias type="com.cloud.pt.ptClass.PtClassVO" alias="PtClassVO"/>
+		<typeAlias type="com.cloud.pt.ptLog.PtLogVO" alias="PtLogVO"/>
+		<typeAlias type="com.cloud.pt.ptType.PtTypeVO" alias="PtTypeVO"/>
+		<typeAlias type="com.cloud.pt.ptClass.PtClassVO" alias="PtClassVO"/>
+		<typeAlias type="com.cloud.pt.locker.LockerVO" alias="LockerVO"/>
+		
+		<!-- 동찬 -->
+		<typeAlias type="com.cloud.pt.approval.ApprovalVO" alias="ApprovalVO"/>
+		<typeAlias type="com.cloud.pt.leave.LeaveVO" alias="LeaveVO"/>
+		
+				
+		<!-- 소영 -->
+		<typeAlias type="com.cloud.pt.chat.RoomVO" alias="RoomVO"/>
+		<typeAlias type="com.cloud.pt.chat.ChatMessageVO" alias="ChatMessageVO"/>
+		<typeAlias type="java.lang.String" alias="String"/>
+		<typeAlias type="com.cloud.pt.notice.NoticeVO" alias="NoticeVO"/>
+		<typeAlias type="com.cloud.pt.notice.NoticeFileVO" alias="NoticeFileVO"/>
+		<typeAlias type="java.util.List" alias="List"/>
+		<typeAlias type="com.cloud.pt.main.HomeVO" alias="HomeVO"/>
 	</typeAliases>
+	
+	 <!-- <mappers>
+		<mapper resource="/mappers/LockerMapper.xml"/>
+	</mappers>  -->
 </configuration>

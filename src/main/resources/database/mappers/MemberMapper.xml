@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.cloud.pt.member.MemDAO">
+	<sql id="search">
+		<if test="kind=='name'">WHERE MEMBERNAME LIKE CONCAT('%',#{search},'%')</if>
+	</sql>
+	
+	
+	<select id="getMemberTotal" parameterType="Pager" resultType="Long">
+		SELECT COUNT(MEMBERNUM) FROM MEMBER 
+		<include refid="search"></include>
+	</select>
+
+	<select id="getMemberList" parameterType="Map" resultMap="getMemberDetailResult">
+		SELECT * FROM MEMBER M
+		LEFT OUTER JOIN REGISTRATION R
+		ON M.MEMBERNUM=R.MEMBERNUM
+		LEFT OUTER JOIN EMPLOYEE E
+		ON M.EMPLOYEENUM=E.EMPLOYEENUM
+		<if test="pager.kind=='name'">WHERE MEMBERNAME LIKE CONCAT('%',#{pager.search},'%')</if>
+		ORDER BY M.MEMBERNUM DESC
+		LIMIT #{pager.startRow},#{pager.lastRow}
+	</select>
+
+	<insert id="setMemberAdd" parameterType="MemVO">
+		INSERT INTO MEMBER
+		VAlUES (NULL, NULL, #{memberName}, #{phone},#{address},#{gender}, #{birth}, #{joinDate}, #{expirationDate} , NULL, SUBSTRING(#{joinDate},6,2) );
+	</insert>
+
+	<select id="getMemberDetail" parameterType="MemVO" resultMap="getMemberDetailResult">
+		SELECT * FROM MEMBER MEM
+		LEFT OUTER JOIN MEMBERSHIP MS 
+		ON MEM.MEMBERNUM = MS.MEMBERSHIPNUM 
+		LEFT OUTER JOIN REGISTRATION R 
+		ON MEM.MEMBERNUM = R.MEMBERNUM
+		WHERE MEM.MEMBERNUM  = #{memberNum} 
+	</select>
+	
+	<resultMap type="MemVO" id="getMemberDetailResult">
+		<id column="MEMBERNUM" property="memberNum"/>
+		<result column="EMPLOYEENUM" property="employeeNum"/>
+		<result column="MEMBERNAME" property="memberName"/>
+		<result column="PHONE" property="phone"/>
+		<result column="GENDER" property="gender"/>
+		<result column="BIRTH" property="birth"/>
+		<result column="JOINDATE" property="joinDate"/>
+		<result column="PTCOUNT" property="ptCount"/>
+		<result column="EXPIRATIONDATE" property="expirationDate"/>
+		<result column="ADDRESS" property="address"/>
+		<association property="employeeVO" javaType="EmployeeVO">
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
+		</association>
+		<collection property="membershipVO" javaType="List" ofType="MembershipVO">
+			<id column="MEMBERSHIPNUM" property="membershipNum"/>
+			<result column="NAME" property="name"/>			
+			<result column="TYPE" property="type"/>
+			<result column="MONTH" property="month"/>
+			<result column="PTCOUNT" property="ptCount"/>
+			<result column="PRICE" property="price"/>
+		</collection>
+		<collection property="registrationVO" javaType="List" ofType="RegistrationVO">
+			<id column="REGISTRATIONNUM" property="registrationNum"/>
+			<result column="MEMBERNUM" property="memberNum"/>
+			<result column="MEMBERSHIPNUM" property="membershipNum"/>
+			<result column="REGDATE" property="regDate"/>			
+		</collection>
+		
+	</resultMap>
+	
+	<update id="setMemberUpdate" parameterType="MemVO">
+		UPDATE MEMBER
+		SET 
+		MEMBERNAME=#{memberName},PHONE=#{phone},ADDRESS=#{address},BIRTH=#{birth},GENDER=#{gender}
+		WHERE MEMBERNUM = #{memberNum}
+	</update>
+	
+	<delete id="setMemberDelete" parameterType="MemVO">
+		DELETE FROM MEMBER WHERE MEMBERNUM = #{memberNum}
+	</delete>
+
+</mapper>

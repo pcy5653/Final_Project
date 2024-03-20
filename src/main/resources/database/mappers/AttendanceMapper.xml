@@ -3,22 +3,315 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
-<mapper namespace="com.cloud.pt.attendance">
-	<select id="getInfo" resultMap="getInfoResult" parameterType="EmployeeVO">
-		SELECT A.*, E.*
+<mapper namespace="com.cloud.pt.attendance.AttendanceDAO">
+	<sql id="searchSql"> 
+		<if test="kind=='name'">WHERE E.NAME LIKE CONCAT('%',#{search},'%')</if>
+		<if test="kind=='status'">WHERE AM.STATUS LIKE CONCAT('%',#{search},'%')</if>
+	</sql>
+	
+	<sql id="searchSqlA">
+		<if test="pager.kind=='name'">AND E.NAME LIKE CONCAT('%',#{pager.search},'%')</if>
+		<if test="pager.kind=='state'">AND A.STATE LIKE CONCAT('%',#{pager.search},'%')</if>
+	</sql>
+
+	<sql id="joinSql">
+		FROM ATTENDANCEMODIFY AM
+			JOIN ATTENDANCE A
+			ON AM.ATTENDANCENUM=A.ATTENDANCENUM
+			JOIN EMPLOYEE E
+			ON A.EMPLOYEENUM=E.EMPLOYEENUM
+	</sql>
+	
+	<sql id="positionJoinName">
+		CASE E.POSITION
+			WHEN 'ROLE_CEO' THEN '대표'
+			WHEN 'ROLE_GENERAL' THEN '총괄 매니저'
+			WHEN 'ROLE_CUSTOMER' THEN '고객관리 매니저'
+			WHEN 'ROLE_RESOURCES' THEN '인사 매니저'
+			WHEN 'ROLE_FACILITY' THEN '시설 매니저'
+			WHEN 'ROLE_TRAINER' THEN '트레이너'
+			WHEN 'ROLE_EX' THEN '가발령'
+		END AS 'POSITION'
+	</sql>
+	
+	<!-- attendanceNum 찾기 -->
+	<select id="getNum" resultType="java.lang.Long" parameterType="Map">
+		SELECT ATTENDANCENUM
+		FROM ATTENDANCE
+		WHERE WORKDATE=#{modify.modifyDate}
+		AND EMPLOYEENUM=#{emp.employeeNum}
+	</select>
+	
+	<!-- 출근시간 입력 -->
+	<insert id="setOn" parameterType="EmployeeVO">
+		INSERT INTO ATTENDANCE
+		(EMPLOYEENUM, WORKDATE, ONTIME)
+		VALUES (#{employeeNum}, NOW(), NOW())
+	</insert>
+	
+	<!-- 퇴근시간 입력 -->
+	<update id="setOff" parameterType="EmployeeVO">
+		UPDATE ATTENDANCE
+			SET OFFTIME=NOW()
+			WHERE EMPLOYEENUM=#{employeeNum}
+			AND WORKDATE=DATE_FORMAT(NOW(), '%Y-%m-%d')
+	</update>
+	
+	<!-- 직원 목록 -->
+	<select id="getEmployeeList" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM
+		FROM EMPLOYEE 
+	</select>
+	
+	<!-- 스케쥴러에서 사용 -->
+	<!-- 레코드를 삽입하고 기본키 또는 유니크 제약조건 위반 시 기존 레코드 업데이트 -->
+	<insert id="setEnd" parameterType="Map">
+		INSERT INTO ATTENDANCE
+		(EMPLOYEENUM, WORKDATE, STATE)
+		VALUES (#{vo.employeeNum}, #{date}, '결근')
+		ON DUPLICATE KEY UPDATE STATE='결근'
+	</insert>
+	
+<!-- 	<insert id="setEnd" parameterType="Map">
+		INSERT INTO ATTENDANCE
+		(EMPLOYEENUM, WORKDATE, STATE)
+		VALUES (#{vo.employeeNum}, #{date}, '결근')
+	</insert> -->
+
+	<update id="setState" parameterType="Map">
+		UPDATE ATTENDANCE
+		<set>
+			<if test="vo.onTime lt on and vo.offTime gte off">STATE='정상'</if>
+			<if test="vo.onTime gte on and vo.offTime gte off">STATE='지각'</if>
+			<if test="vo.onTime gte on and vo.offTime lt off">STATE='조퇴'</if>
+			<if test="vo.onTime lt on and vo.offTime lt off">STATE='조퇴'</if>
+		</set>
+			WHERE ATTENDANCENUM=#{vo.attendanceNum}
+	</update>
+ 	
+ 	<!-- 해당직원의 근태정보리스트 -->
+	<select id="getList" resultType="Map" parameterType="EmployeeVO">
+		SELECT *
+		FROM ATTENDANCE
+		WHERE EMPLOYEENUM=#{employeeNum}
+	</select>
+	
+	<!-- 전체직원의 근태정보리스트 -->
+	<select id="getAdminList" resultType="Map">
+		SELECT A.*, E.NAME, E.EMPLOYEENUM
+		FROM ATTENDANCE A
+			JOIN EMPLOYEE E
+			ON A.EMPLOYEENUM=E.EMPLOYEENUM
+	</select>
+	
+	<!-- 전체직원리스트 -->
+	<select id="getResources" resultType="Map">
+		SELECT *
+		FROM EMPLOYEE
+	</select>
+	
+	<!-- 내 근태정보 -->
+	<select id="getInfo" resultMap="getInfoResult" parameterType="Map">
+		SELECT A.*,E.EMPLOYEENUM,E.NAME,E.LEAVEDATE,E.PROFILE,
+		<include refid="positionJoinName"></include>
 		FROM ATTENDANCE A 
 			JOIN EMPLOYEE E
 			ON A.EMPLOYEENUM=E.EMPLOYEENUM
-		WHERE E.EMPLOYEENUM=${employeeNum}
-		AND A.WORKDATE=NOW()
+		WHERE E.EMPLOYEENUM=#{vo.employeeNum}
+		AND A.WORKDATE=#{date}
 	</select>
 	
-	<resultMap type="EmployeeVO" id="getInfoResult">
-		<id column="EMPLOYEENUM" property="employeeNum"/>
-		<result column="NAME" property="name"/>
-		<result column="LEAVEDATE" property="leaveDate"/>
-		<association property="attendanceVO" javaType="AttendanceVO">
-		
+	<resultMap type="AttendanceVO" id="getInfoResult">
+		<id column="ATTENDANCENUM" property="attendanceNum"/>
+		<result column="EMPLOYEENUM" property="employeeNum"/>
+		<result column="WORKDATE" property="workDate"/>
+		<result column="ONTIME" property="onTime"/>
+		<result column="OFFTIME" property="offTime"/>
+		<result column="STATE" property="state"/>
+		<association property="employeeVO" javaType="EmployeeVO">			
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
+			<result column="LEAVEDATE" property="leaveDate"/>
+			<result column="PROFILE" property="proFile"/>
+			<result column="POSITION" property="position"/>
+		</association>
+	</resultMap>	
+	
+	<!-- 당일 근태 total -->
+	<select id="getDayTotal" resultType="Long" parameterType="Map">
+		SELECT COUNT(A.ATTENDANCENUM)
+		FROM ATTENDANCE A
+			JOIN EMPLOYEE E
+			ON A.EMPLOYEENUM=E.EMPLOYEENUM 
+		WHERE A.WORKDATE=#{attendance.workDate}
+		<include refid="searchSqlA"></include>	
+	</select>
+	
+	<!-- 당일 근태 리스트 -->
+	<select id="getDayList" resultMap="getDayResult" parameterType="Map">
+		SELECT A.*, E.NAME
+		FROM ATTENDANCE A
+			JOIN EMPLOYEE E
+			ON A.EMPLOYEENUM=E.EMPLOYEENUM 
+		WHERE A.WORKDATE=#{attendance.workDate}
+		<include refid="searchSqlA"></include>
+		ORDER BY A.ONTIME DESC	
+		LIMIT #{pager.startRow}, #{pager.lastRow}
+	</select>
+	
+	<resultMap type="AttendanceVO" id="getDayResult">
+		<id column="ATTENDANCENUM" property="attendanceNum"/>
+		<result column="EMPLOYEENUM" property="employeeNum"/>
+		<result column="WORKDATE" property="workDate"/>
+		<result column="ONTIME" property="onTime"/>
+		<result column="OFFTIME" property="offTime"/>
+		<result column="STATE" property="state"/>
+		<association property="employeeVO" javaType="EmployeeVO">			
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
 		</association>
 	</resultMap>
+	
+	<!-- 근태 수정 -->
+	<update id="setUpdateA" parameterType="Map">
+		UPDATE ATTENDANCE
+			<set> 
+				<if test="modify.type eq '출근'">ONTIME=#{modify.modifyTime}</if>
+				<if test="modify.type eq '퇴근'">OFFTIME=#{modify.modifyTime}</if>
+			</set>
+			WHERE ATTENDANCENUM=#{attendance.attendanceNum}
+	</update>
+	
+	<!-- 근태요청 수정 -->
+	<update id="setUpdateAM" parameterType="AttendanceModifyVO">
+		UPDATE ATTENDANCEMODIFY
+			SET MODIFYCONTENTS=#{modifyContents},
+			STATUS=#{status}
+			WHERE ATTENDANCEMODIFYNUM=#{attendanceModifyNum}
+	</update>
+	
+	<!-- 근태수정요청안 상세 -->
+	<select id="getRequest" resultMap="getDetailResult" parameterType="AttendanceModifyVO">
+		SELECT AM.*, A.*, E.NAME, E.EMPLOYEENUM
+		<include refid="joinSql"></include>
+		WHERE AM.ATTENDANCEMODIFYNUM=#{attendanceModifyNum}
+	</select>
+	
+	<resultMap type="AttendanceModifyVO" id="getDetailResult">
+		<id column="ATTENDANCEMODIFYNUM" property="attendanceModifyNum"/>
+		<result column="REGDATE" property="regDate"/>
+		<result column="ORIGINALTIME" property="originalTime"/>
+		<result column="ORIGINALSTATE" property="originalState"/>
+		<result column="MODIFYDATE" property="modifyDate"/>
+		<result column="MODIFYTIME" property="modifyTime"/>
+		<result column="REQUESTCONTENTS" property="requestContents"/>
+		<result column="TYPE" property="type"/>		
+		<result column="MODIFYCONTENTS" property="modifyContents"/>	
+		<association property="attendanceVO" javaType="AttendanceVO">
+			<id column="ATTENDANCENUM" property="attendanceNum"/>
+			<result column="WORKDATE" property="workDate"/>
+			<result column="ONTIME" property="onTime"/>
+			<result column="OFFTIME" property="offTime"/>
+			<result column="STATE" property="state"/>
+		</association>
+		<association property="employeeVO" javaType="EmployeeVO">
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
+		</association>
+	</resultMap>	
+	
+	<!-- 근태수정요청안 총 갯수(관리자) -->
+	<select id="getRequestTotal" resultType="java.lang.Long" parameterType="Pager">
+		SELECT COUNT(AM.ATTENDANCEMODIFYNUM)
+		<include refid="joinSql"></include>
+		<include refid="searchSql"></include>
+	</select>
+
+	<!-- 근태수정요청 목록(관리자) -->
+	<select id="getRequestList" resultMap="getRequestResult" parameterType="Pager">
+		SELECT AM.*, E.NAME 
+		<include refid="joinSql"></include>
+		<include refid="searchSql"></include>
+		ORDER BY AM.ATTENDANCEMODIFYNUM DESC
+		LIMIT #{startRow}, #{lastRow}
+	</select>
+	
+	<resultMap type="AttendanceModifyVO" id="getRequestResult">
+		<id column="ATTENDANCEMODIFYNUM" property="attendanceModifyNum"/>
+			<result column="ATTENDANCENUM" property="attendanceNum"/>
+			<result column="REGDATE" property="regDate"/>
+			<result column="MODIFYDATE" property="modifyDate"/>
+			<result column="MODIFYTIME" property="modifyTime"/>
+			<result column="STATUS" property="status"/>
+			<result column="TYPE" property="type"/>
+		<association property="employeeVO" javaType="EmployeeVO">
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
+		</association>
+		<association property="attendanceVO" javaType="AttendanceVO">
+			<id column="ATTENDANCENUM" property="attendanceNum"/>
+		</association>
+	</resultMap> 
+	
+	<!-- 내 근태수정요청서 총 갯수 -->
+	<select id="getModifyTotal" parameterType="EmployeeVO" resultType="Long">
+		SELECT COUNT(ATTENDANCEMODIFYNUM)
+		<include refid="joinSql"></include>
+		WHERE E.EMPLOYEENUM=#{employeeNum}
+	</select>
+	
+	<!-- 내 근태수정요청서 상세 -->
+	<select id="getModifyDetail" resultType="AttendanceModifyVO" parameterType="AttendanceModifyVO">
+		SELECT * 
+		FROM ATTENDANCEMODIFY
+		WHERE ATTENDANCEMODIFYNUM=#{attendanceModifyNum}
+	</select>
+	
+	<!-- 내 근태수정요청 목록 -->
+	<select id="getModifyList" resultMap="getListResult" parameterType="Map">
+		SELECT AM.*, E.NAME 
+		<include refid="joinSql"></include>
+		WHERE E.EMPLOYEENUM=#{vo.employeeNum}
+		ORDER BY AM.ATTENDANCEMODIFYNUM DESC
+		LIMIT #{pager.startRow}, #{pager.lastRow}
+	</select>
+	
+	<resultMap type="AttendanceModifyVO" id="getListResult">
+		<id column="ATTENDANCEMODIFYNUM" property="attendanceModifyNum"/>
+		<result column="ATTENDANCENUM" property="attendanceNum"/>
+		<result column="REGDATE" property="regDate"/>
+		<result column="MODIFYDATE" property="modifyDate"/>
+		<result column="MODIFYTIME" property="modifyTime"/>
+		<result column="STATUS" property="status"/>
+		<result column="TYPE" property="type"/>
+		<association property="employeeVO" javaType="EmployeeVO">
+			<id column="EMPLOYEENUM" property="employeeNum"/>
+			<result column="NAME" property="name"/>
+		</association>
+		<association property="attendanceVO" javaType="AttendanceVO">
+			<id column="ATTENDANCENUM" property="attendanceNum"/>
+		</association>
+	</resultMap>
+	
+	<!-- 근태 상세 -->
+	<select id="getDetail" resultType="AttendanceVO" parameterType="Long">
+		SELECT * 
+		FROM ATTENDANCE
+		WHERE ATTENDANCENUM=#{num}
+	</select>
+	
+	<!-- 근태요청기록 조회 -->
+	<select id="getModify" resultType="AttendanceModifyVO" parameterType="AttendanceModifyVO">
+		SELECT *
+		FROM ATTENDANCEMODIFY
+		WHERE ATTENDANCENUM=#{attendanceNum}
+		AND TYPE=#{type}
+	</select>
+
+	<!-- 근태수정요청서 등록 -->
+	<insert id="setModifyAdd" parameterType="AttendanceModifyVO">
+		INSERT INTO ATTENDANCEMODIFY
+		(ATTENDANCENUM,REGDATE,ORIGINALTIME,ORIGINALSTATE,MODIFYDATE,MODIFYTIME,REQUESTCONTENTS,TYPE,STATUS)
+		VALUES (#{attendanceNum},NOW(),#{originalTime},#{originalState},#{modifyDate},#{modifyTime},#{requestContents},#{type},'요청')
+	</insert>
 </mapper>

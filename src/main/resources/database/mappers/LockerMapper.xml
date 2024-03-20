@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.cloud.pt.locker.LockerDAO">
+  	<!-- 전체 라커 조회 -->
+  	<select id="getLockerList" resultType="LockerVO" parameterType="LockerVO">
+SELECT L.LOCKERNUM,M.MEMBERNAME ,L.STARTDATE,L.FINISHDATE,L.MEMBERNUM ,L.STATE FROM LOCKER L LEFT OUTER JOIN MEMBER M ON L.MEMBERNUM = M.MEMBERNUM;
+</select>
+  	
+  	<!-- <insert id="addLocker" parameterType="LockerVO">
+  		INSERT INTO LOCKER (ENROLLDATE) VALUES(NOW())
+  	</insert> -->
+  	<!-- 라커에 회원 적용 -->
+  	<update id="addUser" parameterType="LockerVO">
+  		UPDATE LOCKER SET MEMBERNUM = #{memberNum} , STARTDATE = #{startDate} ,FINISHDATE =#{finishDate} WHERE LOCKERNUM = #{lockerNum}
+  	</update>
+  	<!-- 라커 고장 등록 -->
+  	<update id="setRepair" parameterType="LockerVO">
+  		UPDATE LOCKER SET STATE = '고장',STARTDATE = NULL, FINISHDATE = NULL WHERE LOCKERNUM = #{lockerNum}
+  	</update>
+  	<!-- 라커 수리 등록 -->
+  	<update id="recoverLocker" parameterType="LockerVO">
+  		UPDATE LOCKER SET STATE = '정상' WHERE LOCKERNUM = #{lockerNum}
+  	</update>
+  	<!-- 전체 멤버 조회(모달창에 띄우기) DB에 저장되어있으면 출력 X -->
+  	<select id="getUser" resultType="MemVO" parameterType="MemVO">
+  		SELECT M.MEMBERNUM,M.MEMBERNAME  
+			FROM MEMBER M LEFT OUTER JOIN LOCKER L
+			ON M.MEMBERNUM = L.MEMBERNUM
+			WHERE L.MEMBERNUM IS NULL
+  	</select>
+  	<!-- 라커 회원 삭제 -->
+  	<update id="delUser" parameterType="LockerVO">
+  		UPDATE LOCKER SET STARTDATE = NULL ,MEMBERNUM = NULL , FINISHDATE = NULL WHERE LOCKERNUM = #{lockerNum}
+  	</update>
+  </mapper>

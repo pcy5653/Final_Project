@@ -1,0 +1,98 @@
+#off {
+  display: none;
+  margin: 0 auto;
+}
+.row {
+  height: 450px;
+}
+#notice {
+  display: flex;
+}
+#plus {
+  flex: 0 0 auto;
+  width: 3%;
+  font-size: 25px;
+}
+#ntitle {
+  flex: 0 0 auto;
+  width: 94%;
+  margin: auto;
+}
+#hr1 {
+  background-color: #696cff;
+}
+.b1 {
+  height: 55%;
+  text-align: center;
+}
+.b2 {
+  height: 15%;
+  text-align: center;
+  margin-top: 3px;
+  padding-top: 5px;
+}
+.b3 {
+  height: 15%;
+  text-align: center;
+  margin-top: 3px;
+  padding-top: 5px;
+}
+.b4 {
+  height: 12%;
+  text-align: center;
+  margin-top: 3px;
+  padding-top: 5px;
+}
+.tTitle {
+  width: 40%;
+}
+.tTime {
+  width: 40%;
+  font-size: 16px;
+}
+.a1 {
+  color: #697a8d;
+}
+#fc-dom-1 {
+  font-size: 17px;
+}
+.chartBox {
+  width: 100%;
+  height: 100%;
+}
+.chart1 {
+  width: 100%;
+  height: 95%;
+}
+.timeBox {
+  display: flex;
+  margin-left: 17%;
+}
+.card-body {
+  height: 434px;
+}
+.user {
+  font-size: 17px;
+  font-weight: bold;
+}
+#userProfile {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#proBox {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: auto;
+}
+.fc-daygrid-day-top {
+  height: 1.3rem;
+}
+.card-body{
+  padding: 0.5rem 1.5rem !important;
+}
+.fc .fc-toolbar.fc-header-toolbar{
+  margin-bottom: 0.5rem;
+}

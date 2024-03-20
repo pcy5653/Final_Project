@@ -7,56 +7,148 @@
 <meta charset="UTF-8">
   <title>Insert title here</title>
   <style>
-    #mainContents > h1 {
-      margin-top: 2.5em;
+    h3 {
+      margin-top: 40px !important;
       text-align: center;
     }
     #req_btn {
-      text-align: right;
-      margin: 30px;
+      text-align: end;
+      margin: 2.2rem 7rem 1.8rem;
     }
-    #req_list {
-      background-color: rgb(176, 191, 253);
+    #pager {
+      margin-bottom: 50px;
+    }
+    .container-xxl {
+      margin: 0rem 2.5rem 0 !important;
+      max-width: calc(100% - 5.2rem) !important;
+      padding: 0 !important;
+    }
+    .card {
+      margin: 1.2rem 7rem 1.8rem;
+    }
+    .table th {
+      font-size: 0.9rem !important;
+    }
+    .table thead {
+      background: #e7e7ff;
+    }
+    .table {
+      text-align: center;
     }
   </style>
 
-  <c:import url="/WEB-INF/views/layout/css.jsp"></c:import>
-  <c:import url="/WEB-INF/views/layout/topScript.jsp"></c:import>
-  <link rel="stylesheet" href="/css/main.css" />
-
+  <c:import url="/WEB-INF/views/layout/base.jsp"></c:import>
 </head>
 <body>
-<div id="wrap">
-      <c:import url="/WEB-INF/views/layout/sidebar.jsp"></c:import>
-      <div id="right">
-        <header>
-          <div class="header_wrap">
-            <div class="header_message">
-              <p>이재혁 님 환영합니다</p>
-            </div>
-            <div class="header_navi">
-              <a href="#">조직도</a>
-              <a href="#">로그인</a>
-              <a href="#">로그아웃</a>
-              <a href="#">마이페이지</a>
-            </div>
-          </div>
-        </header>
-        <!-- main내용  -->
-        <section id="mainContents"> 
-        	<h1>근태 수정 요청 목록</h1>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+		      <!-- sidebar -->
+          <c:import url="/WEB-INF/views/layout/sidebar.jsp"></c:import>
+          <!-- Layout container -->
+          <div class="layout-page" style="padding-left: 0 !important;">
+            <!-- Navbar -->
+            <c:import url="/WEB-INF/views/layout/header.jsp"></c:import>
 
-          <div id="req_btn">
-            <button>근태 수정 요청</button>
-          </div>
+            <!-- Content wrapper -->
+            <div class="content-wrapper">
+              <!-- Content 내용 여기로 -->
+              <div class="container-xxl flex-grow-1 container-p-y">
+                <h3>근태 수정 요청 목록</h3>
 
-          <div id="req_list">
-            목록 들어갈 자리
+                <div id="req_btn">
+                  <button id="btn" class="btn btn-primary">근태 수정 요청</button>
+                </div>
+				        <div class="card">
+                  <div id="req_list">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>번호</th>
+                          <th>작성자</th>
+                          <th>작성일</th>
+                          <th>근태수정요청일</th>
+                          <th>출/퇴근</th>
+                          <th>상태</th>
+                          <th>상세</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <c:forEach items="${list}" var="vo" varStatus="i">
+                          <tr>
+                            <td>${i.index+1}</td>
+                            <td>${vo.employeeVO.name}</td>
+                            <td>${vo.regDate}</td>
+                            <td>${vo.modifyDate}</td>
+                            <td>${vo.type}</td>
+                            <td>
+                              <c:if test="${vo.status eq '승인'}">
+                                <span class="badge bg-label-success me-1">${vo.status}</span>
+                              </c:if>
+                              <c:if test="${vo.status eq '요청'}">
+                                <span class="badge bg-label-primary me-1">${vo.status}</span>
+                              </c:if>	
+                              <c:if test="${vo.status eq '반려'}">
+                                <span class="badge bg-label-warning me-1">${vo.status}</span>
+                              </c:if>			
+                            </td>
+                            <td><a href="./detail?attendanceModifyNum=${vo.attendanceModifyNum}"><i class='bx bx-info-circle'></i></a></td>
+                          </tr>
+                        </c:forEach>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="pager">
+                <c:if test="${not empty list}">
+                  <ul class="pagination justify-content-center">
+                    <li class="page-item prev ${pager.pre?'':'disabled'}">
+                      <a class="page-link move" data-num="${pager.startNum-1}" href="#"><i class="tf-icon bx bx-chevrons-left"></i></a>
+                    </li>
+                    <c:forEach begin="${pager.startNum}" end="${pager.lastNum}" var="i">
+                      <li class="page-item">
+                        <a class="page-link move" data-num="${i}" href="#">${i}</a>
+                      </li>
+                    </c:forEach>
+                    <li class="page-item next ${pager.next?'':'disabled'}">
+                      <a class="page-link move" data-num="${pager.lastNum+1}" href="#"><i class="tf-icon bx bx-chevrons-right"></i></a>
+                    </li>
+                  </ul>
+                </c:if>
+              </div> 
+
+              <div class="content-backdrop fade"></div>
+            </div>
+            <!-- Content wrapper -->
           </div>
-        </section>
-        
-      </div>
+        <!-- / Layout page -->
+      <div>
+
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
     </div>
+    <!-- / Layout wrapper -->
+  
+  <c:import url="/WEB-INF/views/layout/js.jsp"></c:import>
+  
+  <script>
+    // const page = $('.page-link[data-num="1"]');
+    // page.parent().addClass('active');
+    
+    //근태수정요청버튼 클릭 시 
+    $('#btn').on('click', function(){
+      $(location).attr('href', '/attendanceModify/add');
+    })
+    
+    //페이지번호 클릭 시 
+    $('.pagination').on('click', '.move', function(){
+      const num = $(this).attr('data-num');
+      $(location).attr('href', '?page='+num);
+    })
+  </script>
+
 </body>
-<c:import url="/WEB-INF/views/layout/btmScript.jsp"></c:import>
 </html>

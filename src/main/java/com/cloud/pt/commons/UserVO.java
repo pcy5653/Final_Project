@@ -7,12 +7,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.cloud.pt.employee.EmployeeVO;
-import com.cloud.pt.member.MemberVO;
+import com.cloud.pt.member.MemVO;
 
 public class UserVO implements UserDetails {
 	
 	private EmployeeVO employeeVO;
-	private MemberVO memberVO;
+	private MemVO memberVO;
 	
 	
 	

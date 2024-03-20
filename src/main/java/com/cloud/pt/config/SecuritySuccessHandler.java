@@ -25,7 +25,7 @@ public class SecuritySuccessHandler implements AuthenticationSuccessHandler{
 		
 		log.info("==>>>>>>>> Authentication : {}", authentication);
 		
-		response.sendRedirect("/");
+		response.sendRedirect("/home");
 	}
 
 	

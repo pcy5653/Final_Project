@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.cloud.pt.chat.ChatDAO">
+		<sql id="positionName">
+		CASE POSITION
+			WHEN 'ROLE_CEO' THEN '대표'
+			WHEN 'ROLE_GENERAL' THEN '총괄 매니저'
+			WHEN 'ROLE_CUSTOMER' THEN '고객관리 매니저'
+			WHEN 'ROLE_RESOURCES' THEN '인사 매니저'
+			WHEN 'ROLE_FACILITY' THEN '시설 매니저'
+			WHEN 'ROLE_TRAINER' THEN '트레이너'
+			WHEN 'ROLE_EX' THEN '가발령'
+		END AS 'POSITION'	
+	</sql>
+	
+	<select id="getChatList" parameterType="String" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM, NAME,
+		<include refid="positionName"></include>
+		FROM EMPLOYEE 
+		WHERE EMPLOYEENUM != #{employeeNum}
+		AND STATE != '퇴직'
+	</select>
+	
+	<select id="getSearch" parameterType="EmployeeVO" resultType="EmployeeVO">
+		SELECT EMPLOYEENUM, NAME, 
+		<include refid="positionName"></include>
+		FROM EMPLOYEE
+		WHERE NAME LIKE CONCAT('%',#{name},'%')
+	    AND EMPLOYEENUM != #{employeeNum}
+	    AND STATE != '퇴직'
+	</select>
+	
+	<select id="roomCheck" parameterType="RoomVO" resultType="RoomVO">
+		SELECT * FROM ROOM
+		WHERE USER1=#{user1} AND USER2=#{user2}
+		   OR USER1=#{user2} AND USER2=#{user1}
+	</select>
+	
+	<insert id="createRoom" parameterType="RoomVO">
+		INSERT INTO ROOM (ROOMNUM, USER1, USER2)
+		VALUES (NULL, #{user1}, #{user2})
+	</insert>
+	
+	<insert id="messageAdd" parameterType="ChatMessageVO">
+		INSERT INTO CHAT (CHATNUM, ROOMNUM, SENDER, RECEIVER, MESSAGE, CHATDATE)
+		VALUES (NULL, #{roomNum}, #{sender}, #{receiver}, #{message}, #{chatDate})
+	</insert>
+	
+	<select id="chatMessageList" parameterType="RoomVO" resultType="ChatMessageVO">
+		SELECT C.CHATNUM, C.ROOMNUM, C.SENDER, E.NAME, C.RECEIVER, C.MESSAGE, left(C.CHATDATE,16) AS CHATDATE
+		FROM CHAT C
+		JOIN EMPLOYEE E ON (C.SENDER = E.EMPLOYEENUM)
+		WHERE C.ROOMNUM = #{roomNum}
+		ORDER BY C.CHATNUM ASC
+	</select>
+	
+	<select id="getSomeone" parameterType="EmployeeVO" resultType="EmployeeVO">
+	 	SELECT EMPLOYEENUM, NAME, PROFILE,
+	 	<include refid="positionName"></include>
+	 	FROM EMPLOYEE
+	 	WHERE EMPLOYEENUM=#{employeeNum}
+	</select>
+
+</mapper>

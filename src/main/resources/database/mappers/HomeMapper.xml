@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.cloud.pt.main.HomeDAO">
+	<select id="getNoticeList">
+		SELECT N.NOTICENUM, N.CATEGORY, N.TITLE, E.NAME, N.MODDATE
+		FROM NOTICE N JOIN EMPLOYEE E
+		ON (N.EMPLOYEENUM=E.EMPLOYEENUM)
+		ORDER BY N.MODDATE DESC
+		LIMIT 0,6
+	</select>
+	
+	<select id="getOnOffTime" parameterType="AttendanceVO" resultType="AttendanceVO">
+		SELECT ONTIME, OFFTIME FROM ATTENDANCE
+		WHERE EMPLOYEENUM = #{employeeNum}
+		AND WORKDATE = #{workDate}
+	</select>
+	
+	<select id="getMember" resultType="HomeVO">
+		SELECT S.MONTHNUM, COUNT(M.MEMBERNUM) TOTAL FROM MONTHS S
+		LEFT JOIN
+		(SELECT * FROM MEMBER 
+		WHERE SUBSTRING(JOINDATE, 1, 4) = SUBSTRING(NOW(), 1, 4))M
+		ON (M.JOINMONTH = S.MONTHNUM)
+		GROUP BY S.MONTHNUM
+		ORDER BY S.MONTHNUM ASC
+	</select>
+	
+	<select id="getApprovalList" parameterType="String" resultType="ApprovalVO">
+		SELECT APPROVALNUM, CATEGORY, TITLE, STATE, REGDATE
+		FROM APPROVAL
+		WHERE EMPLOYEENUM = #{employeeNum}
+		ORDER BY REGDATE DESC
+		LIMIT 0,7
+	</select>
+</mapper>

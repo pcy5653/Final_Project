@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.cloud.pt.ptType.PtTypeDAO">
+  	<select id="getTypeList" parameterType="Map" resultType="PtTypeVO">
+  		SELECT * FROM PTTYPE WHERE PTLOGNUM = #{ptLogNum}
+  	</select>
+  	
+  	 <insert id="addType" parameterType="PtTypeVO">
+		INSERT INTO PTTYPE (PTLOGNUM,NAME,WEIGHT,EXCOUNT,PTSET) VALUES (#{ptLogNum},#{name},#{weight},#{exCount},#{ptSet})
+	</insert>
+	
+	<delete id="delType" parameterType="PtTypeVO">
+		DELETE FROM PTTYPE WHERE PTTYPENUM = #{ptTypeNum}
+	</delete> 
+	
+	<update id="upType" parameterType="PtTypeVO">
+		UPDATE PTTYPE SET NAME = #{name}, WEIGHT = #{weight}, EXCOUNT = #{exCount}, PTSET = #{ptSet} WHERE PTTYPENUM = #{ptTypeNum}
+	</update>
+	
+	<select id="finishAll" parameterType="PtTypeVO">
+		SELECT COUNT(*) FROM PTTYPE WHERE PTLOGNUM = #{ptLogNum}
+	</select>
+	
+	<select id="finishOne" parameterType="PtTypeVO">
+		SELECT COUNT(*) FROM PTTYPE WHERE PTLOGNUM = #{ptLogNum} AND FINISH = 1
+	</select>
+	
+	<update id="upExerciseStatusOne" parameterType="PtTypeVO">
+		UPDATE PTTYPE SET FINISH = 1 WHERE PTTYPENUM =#{ptTypeNum}
+	</update>
+	
+	<update id="minusPt" parameterType="MemVO">
+		UPDATE MEMBER SET PTCOUNT = PTCOUNT -1 WHERE MEMBERNUM = #{memberNum}
+	</update>
+  </mapper>
