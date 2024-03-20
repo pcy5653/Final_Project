@@ -10,7 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 // WebSecurity 설정 클래스 생성
 @Configuration // springBoot 실행 시, 가장 먼저 읽히는 파일 -> **-context.xml 파일 역할
-@EnableWebSecurity // security 활성화
+@EnableWebSecurity // security 활성화를 통해 아래 설정한 보안을 사용할 수 있음
 public class SecutrityConfig {
 	
 	@Autowired
