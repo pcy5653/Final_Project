@@ -28,7 +28,7 @@
 ## 📋프로젝트 개요
 <p align="center"><img width="374" alt="헬스" src="https://github.com/koehdcks/Sul/assets/68891642/cfd0f5d0-cdba-45c0-a565-d6e02aa42957"></p>
 
-> **프로젝트** : Cloud PT GroupWare (헬스 그룹웨어)  
+> **프로젝트** : Cloud PT GroupWare (헬스 그룹웨어)  <br>
 > **기획 및 제작** : 김동찬, 박채연, 왕유빈, 윤소영, 이재혁  
 > **제작 기간** : 2023.10.06 ~ 2023.11.21  
 > **분류** : 팀 프로젝트  
