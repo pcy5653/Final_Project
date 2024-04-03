@@ -99,5 +99,15 @@
 
 <br>
 
-## 🚀기능 구현
+## 🔍기능 구현
+### 1. 회원
+#### 1-1. 메인화면
+<p align="center">
+<img style="width:300px;" align="center" src="" />
+<img style="width:200px;" align="center" src="" />
+</p>
 
+- 위 이미지에 대한 내용
+
+<br>
+<br>
