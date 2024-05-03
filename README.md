@@ -103,7 +103,7 @@
 ### 1. 회원
 #### 1-1. 메인화면
 <p align="center">
-<img style="width:300px;" align="center" src="" />
+<img style="width:300px;" align="center" src="https://github.com/pcy5653/GDJ68_Boot/assets/68891642/e63c45f7-6b85-47ac-8648-ea44e0407dca" />
 <img style="width:200px;" align="center" src="" />
 </p>
 
